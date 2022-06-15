@@ -1,0 +1,51 @@
+It is already a cleaned data and there are no null values in it. 
+
+For better processing and understanding, we are going to change the column/feature names and replace the categorical values.
+
+
+#Changing the column names
+df.columns = ['age', 'sex', 'chest_pain_type', 'resting_blood_pressure', 'cholesterol', 'fasting_blood_sugar', 'rest_ecg', 'max_heart_rate',
+       'exercise_induced_angina', 'st_depression', 'st_slope','target']
+
+#Replacing the values to categorical values
+df['chest_pain_type'][df['chest_pain_type'] == 1] = 'typical angina'
+df['chest_pain_type'][df['chest_pain_type'] == 2] = 'atypical angina'
+df['chest_pain_type'][df['chest_pain_type'] == 3] = 'non-anginal pain'
+df['chest_pain_type'][df['chest_pain_type'] == 4] = 'asymptomatic'
+
+df['rest_ecg'][df['rest_ecg'] == 0] = 'normal'
+df['rest_ecg'][df['rest_ecg'] == 1] = 'ST-T wave abnormality'
+df['rest_ecg'][df['rest_ecg'] == 2] = 'left ventricular hypertrophy'
+
+df['st_slope'][df['st_slope'] == 1] = 'upsloping'
+df['st_slope'][df['st_slope'] == 2] = 'flat'
+df['st_slope'][df['st_slope'] == 3] = 'downsloping'
+
+df['sex'] = df['sex'].apply(lambda  x: 'male' if x==1 else 'female')
+
+df['target'] = df['target'].apply(lambda  x:'Cardiac_Disease' if x==1 else 'No_Cardiac_Disease')
+
+In st_slope column there are some values as 0 which will not be the valid. Before move to the next step we need to drop those values,
+
+#remove the values which has 0
+df.drop(df[df.st_slope ==0].index, inplace=True)
+#checking distribution
+df['st_slope'].value_counts()
+
+#Finding the missing values
+df.isnull().sum()
+
+#Finding the duplicate rows
+repeated=df.duplicated().sum()
+if repeated:
+  print("Available duplicate rows are: {}".format(repeated))
+else:
+  print("There is no duplicate records")
+  
+repeated=df[df.duplicated(keep=False)]
+repeated.head()
+
+#Drop the duplicates
+df=df.drop_duplicates()
+df.shape
+ 
