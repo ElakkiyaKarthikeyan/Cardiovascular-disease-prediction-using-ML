@@ -1,0 +1,242 @@
+The objective of the analysis is to explore the dataset and create a visualization to recognize which features and combinations of features are correlated with the target feature HeartDisease.
+
+#Statistics Summary
+df.describe()
+df.describe(include=[np.object])
+
+#Continuous Variable Distribution
+plt.style.use("dark_background")
+plt.figure(figsize=(18,12))
+plt.subplot(321)
+diag= sns.distplot(df['age'], rug=True, color='yellow',label='Skewness : %.2f'%df['age'].skew())
+plt.title("Age Distribution",fontsize=20,fontweight="bold")
+plt.grid(False)
+plt.legend()
+plt.subplot(322)
+plt.style.use("dark_background")
+#sns.set(style='ticks')
+diag= sns.distplot(df['cholesterol'], rug=True, color='cyan',label='Skewness : %.2f'%df['cholesterol'].skew())
+plt.title("Cholesterol distribution", fontsize=20,fontweight="bold")
+plt.grid(False)
+plt.legend()
+plt.show()
+plt.figure(figsize=(18,12))
+plt.subplot(323)
+diag= sns.distplot(df['max_heart_rate'], rug=True, color='orange',label='Skewness : %.2f'%df['max_heart_rate'].skew())
+plt.title("Max_Heart_Rate Distribution",fontsize=20,fontweight="bold")
+plt.grid(False)
+plt.legend()
+plt.subplot(324)
+#plt.style.use("dark_background")
+#sns.set(style='ticks')
+diag= sns.distplot(df['resting_blood_pressure'], rug=True, color='deeppink',label='Skewness : %.2f'%df['resting_blood_pressure'].skew())
+plt.title("Resting Blood Pressure distribution", fontsize=20,fontweight="bold")
+plt.grid(False)
+plt.legend()
+plt.show()
+plt.figure(figsize=(18,4))
+sns.distplot(df['st_depression'],color='blue',label='Skewness : %.2f'%df['st_depression'].skew())
+plt.title("ST_Depression distribution", fontsize=20,fontweight="bold")
+plt.grid(False)
+plt.legend()
+
+#Plotting based on the target variable
+plt.style.use('seaborn')
+figure, (axis1, axis2) = plt.subplots(nrows=1, ncols=2, sharey=False, figsize=(14,6))
+colors = ("lightgreen","cyan")
+axis1 = df['target'].value_counts().plot.pie( x="Cardiovascular disease" ,y ='Patients Count', 
+                                             autopct = "%1.0f%%",labels=["Cardiac_disease","No_Cardiac_disease"], startangle = 60, ax=axis1, colors=colors)
+axis1.set(title = 'Percentage of Cardiovascular disease patients')
+
+axis2 = df["target"].value_counts().plot.barh(ax =axis2, color=colors)
+for i,j in enumerate(df["target"].value_counts().values):
+    axis2.text(.5,i,j,fontsize=12)
+axis2.set(title = 'No.of patients affected by cardiovascular disease')
+plt.subplots_adjust(left=0.1,
+                    right=1.5)
+plt.show()
+
+#Age Distribution
+plt.style.use('seaborn-bright')
+sns.distplot(d1['age'],label='Non_Cardiac_Disease',color='#03ED3A')
+sns.distplot(d2['age'],label='Cardiac_Disease',color='#E8000B')
+plt.legend()
+plt.grid(False)
+plt.title('Density of Age')
+
+#Age with Gender Distribution
+x = []
+for i in range(0,len(df)):
+    if((df['age'].iloc[i] > 0) & (df['age'].iloc[i] < 20)):
+        x.append('0-20')
+    elif((df['age'].iloc[i] > 20) & (df['age'].iloc[i] < 40) ):
+        x.append('21-50')
+    elif((df['age'].iloc[i] > 40) & (df['age'].iloc[i] < 60) ):
+        x.append('51-60')
+    else:
+        x.append('> 60')
+        
+df['Group_Age'] = x
+
+!pip install squarify
+
+import squarify
+
+df['target'] = df['target'].apply(lambda  x:1 if x=='Cardiac_Disease' else 0)
+
+fig,(axis1,axis2) = plt.subplots(1,2,figsize=(20,5))
+df['Group_Age'].value_counts()
+labels = df['Group_Age'].value_counts().index
+sizes = df['Group_Age'].value_counts().values
+colors = ['lightgreen', 'cyan', 'pink']
+
+perc = [str('{:5.2f}'.format(i/df['Group_Age'].value_counts().sum()*100)) + "%" for i in df['Group_Age'].value_counts()]
+lbl = ["Age" + " " + el[0] + " = " + el[1] for el in zip(df['Group_Age'].value_counts().index, perc)]
+#squarify.plot(sizes=sizes, label=lbl, alpha=.8,ax=axis1)
+#squarify.plot(label=lbl,ax=axis,sizes=sizes)
+squarify.plot(sizes=sizes,color=colors,label = lbl,ax=axis1)
+#plt.axis('off')
+
+
+plt.title('Age group Category')
+sns.barplot(x='Group_Age',y='target',hue='sex',data=df,palette="rocket",ci=None,ax=axis2)
+plt.figure(figsize=(18,12))
+plt.subplot(233)
+df["sex"].value_counts().plot.pie(autopct = "%1.0f%%",colors = sns.color_palette("gist_rainbow",5),startangle = 60,labels=["Male","Female"],
+wedgeprops={"linewidth":2,"edgecolor":"k"},explode=[.1,.1],shadow =True)
+plt.title("Gender Distribution",fontsize=20,fontweight="bold")
+#plt.title('Age Group Vs Sex Vs Target')
+#sns.barplot(x='sex',y='target',data=df,palette="coolwarm",ci=None,ax=axis3)
+#plt.title('Sex Vs Target')
+
+#Max heart Rate
+
+plt.style.use('seaborn-whitegrid')
+d1['max_heart_rate'].plot.hist(bins = 30, color='m',edgecolor = 'white', 
+linewidth = 1.0, label = 'Non_Cardiac Patients')
+d2['max_heart_rate'].plot.hist(bins = 30, color='#00D7FF',edgecolor = 'white', 
+linewidth = 1.0, alpha = 0.6, label = 'Cardiac_Patients')
+plt.title('Cardiac Patient Heart Rate Vs Non-Cardiac Patient Heart Rate', 
+fontsize = 20)
+plt.xlabel('Heart_Rate', fontsize = 14)
+plt.ylabel('Frequency', fontsize = 14)
+plt.legend(fontsize = 14)
+plt.grid(False)
+
+#Heart rate unequal variance
+
+mean = df.groupby('target')['max_heart_rate'].mean()
+std = df.groupby('target')['max_heart_rate'].std()
+stat = pd.DataFrame({'Group':['No_Cardiac_Disease','Cardiac_Disease'],'Max_heart_rate_Mean':mean.values,'Max_heart_rate_Std':std.values,
+                       'Sample_Size':[len(d1['max_heart_rate']),len(d2['max_heart_rate'])]})
+stat
+
+#Chest Pain Type Distribution
+
+plt.style.use("dark_background")
+figure, axis = plt.subplots(figsize=(10,5))
+Category = d2['chest_pain_type']
+axis = sns.countplot(x='chest_pain_type', hue='target', data=df, palette='Set1')
+axis.set_title("Chest Pain Distribution based on the Target", fontsize = 16, weight = 'bold')
+axis.set_xticklabels (Category, rotation = 0)
+
+Aggregated = []
+for i in axis.patches:
+    Aggregated.append(i.get_height())
+total = sum(Aggregated)
+for i in axis.patches:
+    axis.text(i.get_x()+.03, i.get_height()-5,
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=14,
+                color='white', weight = 'bold')  
+plt.tight_layout()
+plt.grid(False)
+
+#st_slope Distribution
+
+figure, axis = plt.subplots(figsize=(8,5))
+Category = df['st_slope']
+axis = sns.countplot(x='st_slope', hue='target', data=df, palette='rocket')
+axis.set_title("ST-Segment Distribution based on the Target", fontsize = 16, weight = 'bold')
+axis.set_xticklabels (Category, rotation = 0)
+
+Aggregated = []
+for i in axis.patches:
+    Aggregated.append(i.get_height())
+total = sum(Aggregated)
+for i in axis.patches:
+    axis.text(i.get_x()+.05, i.get_height()-15,
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=14,
+                color='white', weight = 'bold')  
+plt.tight_layout()
+plt.grid(False)
+
+# Fasting Blood Sugar Distribution
+
+df['fasting_blood_sugar'] = df['fasting_blood_sugar'].replace({1: "True", 0: "False"})
+figure, axis = plt.subplots(figsize=(8,5))
+Category = df['fasting_blood_sugar']
+axis = sns.countplot(x='fasting_blood_sugar', hue='target', data=df, palette='Set1')
+axis.set_title("Blood sugar before food Distribution based on the Target", fontsize = 16, weight = 'bold')
+axis.set_xticklabels (Category, rotation = 0)
+
+Aggregated = []
+for i in axis.patches:
+    Aggregated.append(i.get_height())
+total = sum(Aggregated)
+for i in axis.patches:
+    axis.text(i.get_x()+.05, i.get_height()-15,
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=14,
+                color='white', weight = 'bold')  
+plt.tight_layout()
+plt.grid(False)
+
+#Resting ECG
+
+# Non-Cardiac patients
+fig = plt.figure(figsize=(15,5))
+a1 = plt.subplot2grid((1,2),(0,0))
+a2=sns.countplot(d1['rest_ecg'],palette='Accent_r')
+plt.title('Rest ECG Distribution of Non-Cardiac Patients', fontsize=15, weight='bold')
+Aggregated = []
+for i in a2.patches:
+    Aggregated.append(i.get_height())
+total = sum(Aggregated)
+for i in a2.patches:
+    a2.text(i.get_x()+.05, i.get_height()-15,
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=10,
+                color='Black', weight = 'bold') 
+plt.grid(False)
+
+#Cardiac patients
+a1 = plt.subplot2grid((1,2),(0,1))
+a2=sns.countplot(d2['rest_ecg'], palette='viridis')
+plt.title('Rest ECG Distribution of Cardiac Patients', fontsize=15, weight='bold' )
+Aggregated = []
+for i in a2.patches:
+    Aggregated.append(i.get_height())
+total = sum(Aggregated)
+for i in a2.patches:
+    a2.text(i.get_x()+.05, i.get_height()-15,
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=14,
+                color='white', weight = 'bold') 
+plt.grid(False)
+plt.show()
+
+# Correlation between Variables
+
+df['target'] = df['target'].apply(lambda  x:1 if x=='Cardiac_Disease' else 0)
+sns.set(style="white") 
+plt.rcParams['figure.figsize'] = (15, 10) 
+sns.heatmap(df.corr(), annot = True, linewidths=.5, cmap="YlGnBu")
+plt.title('Corelation Between Variables', fontsize = 20)
+plt.show()
+
+# Distribution of correlation between Features
+
+sns.set_style('darkgrid')
+sns.set_palette('Blues_r')
+plt.figure(figsize = (13,6))
+plt.title('Distribution of correlation of features')
+abs(df.corr()['target']).sort_values()[:-1].plot.barh()
+#abs(df.corr()['target'])
+plt.show()
