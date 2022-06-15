@@ -1,0 +1,83 @@
+# To get key statistics for each of the target groups on selected variables, run:
+df[['cholesterol', 'age', 'resting_blood_pressure', 'max_heart_rate']].groupby(df['target']).describe().round(3)
+
+#Pairplot
+colors=['blue','orange']
+customPalette = sns.set_palette(sns.color_palette(colors))
+sns.pairplot(df, vars = ['target', 'cholesterol', 'age','resting_blood_pressure','max_heart_rate'], hue = 'target', palette=customPalette)
+
+# 1. Linearity of independent variables and log odds
+# Creating log transformed IVs & 
+# Obtain interaction terms between each predictor and the log of itself.
+import statsmodels.api as sm
+df['cholesterol_int'] = np.log(df['cholesterol'])*df['cholesterol']
+df['age_int'] = np.log(df['age'])*df['age']
+df['rbs_int'] = np.log(df['resting_blood_pressure'])*df['resting_blood_pressure']
+df['mhr_int'] = np.log(df['max_heart_rate'])*df['max_heart_rate']
+
+
+#There are some null values while creating log of variables.
+df['cholesterol_int'].fillna((df['cholesterol_int'].mean()), inplace=True)
+df['rbs_int'].fillna((df['rbs_int'].mean()), inplace=True)
+
+#Nohigh multicollinearity
+df[['cholesterol', 'age', 'resting_blood_pressure', 'max_heart_rate']].corr().round(3)
+plt.subplots(figsize=(10, 6))
+corrMatrix = df[['cholesterol', 'age', 'resting_blood_pressure', 'max_heart_rate']].corr()
+sns.heatmap(corrMatrix, annot = True, cmap="OrRd")
+
+#Building Logistic Regression Model
+from sklearn.model_selection import train_test_split
+x = df[['age', 'resting_blood_pressure', 'max_heart_rate']]
+x = sm.add_constant(x)
+#x = df[['age', 'max_heart_rate']]
+y = df ['target']
+log_mdl = sm.Logit(df['target'], x).fit()
+print(log_mdl.summary2()) 
+#x_train, x_test, y_train, y_test =  train_test_split(x,y, test_size = 0.30, random_state = 8)
+print("-2LL:", log_mdl.llr.round(3))
+print("p-value:", log_mdl.llr_pvalue.round(3))
+
+#Prepare Odds ratio
+print("* Odds ratio for AGE:", np.exp(0.0354).round(3))
+print("* Odds ratio for RBP:", np.exp(0.0042).round(3))
+print("* Odds ratio for MHR:", np.exp(-0.0324).round(3))
+
+#Confusion Matrix
+# Calculating predicted y-values for each var by using the ‘predict’ function:
+y_pred = log_mdl.predict(x)
+from sklearn.metrics import (confusion_matrix, accuracy_score)
+
+# Create a confusion matrix
+cm = confusion_matrix(y, y_pred.round()) 
+print("Confusion Matrix : \n", cm)
+
+## Calculate the accuracy score of the model
+print('Test accuracy = ', accuracy_score(y, y_pred.round()))
+
+#Splitting the dataset (30/70)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.30, random_state = 8)
+x_train = sm.add_constant(x_train) # Add the constant
+log_mdl = sm.Logit(y_train, x_train).fit() # Fit a model
+print(log_mdl.summary2()) 
+
+from sklearn.metrics import (confusion_matrix, accuracy_score, classification_report)
+y_train_pred = log_mdl.predict(x_train)
+# confusion matrix
+# labels on the test data vs. predicted data
+cm = confusion_matrix(y_train, y_train_pred.round())
+print ("Confusion Matrix : \n", cm) # introducing a new line
+# accuracy score of the model
+print('Test accuracy = ', accuracy_score(y_train, y_train_pred.round()))
+
+##Model Evaluation
+
+# performing predictions on the test datdaset
+x_test = sm.add_constant(x_test) # Add the constant
+y_test_pred = log_mdl.predict(x_test)
+# confusion matrix
+cm = confusion_matrix(y_test, y_test_pred.round()) 
+print ("Confusion Matrix : \n", cm)
+# accuracy scores of the model
+print('Test accuracy = ', accuracy_score(y_test, y_test_pred.round()))
+print(classification_report(y_test, y_test_pred.round()))
