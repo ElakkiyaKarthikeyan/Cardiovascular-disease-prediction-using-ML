@@ -1,0 +1,30 @@
+# H1 - T test
+
+import scipy.stats as st
+import math
+t,p=st.ttest_ind(d1['age'], d2['age'], equal_var = False)
+r = math.sqrt(t**2/(t**2 + ( 507+ 410 - 2)))
+print("T-Test result for H1 Hypothesis:")
+print("T Value =", round(t, 3))
+print("P value =", round(p, 3))
+print("Effect Size (r) =", round(r, 3))
+
+#H2 
+
+t,p=st.ttest_ind(d1['max_heart_rate'], d2['max_heart_rate'], equal_var = False)
+r = math.sqrt(t**2/(t**2 + ( 507+ 410 - 2)))
+print("T-Test result for H2 Hypothesis:")
+print("T Value =", round(t, 3))
+print("P Value =", round(p, 3))
+print("Effect Size (r) =", round(r, 3))
+
+#H3
+
+!pip install researchpy
+import researchpy as rp
+df['chest_pain_type'] = df['chest_pain_type'].apply(lambda  x:1 if x=='asymptomatic' else 0)
+crtb, test, expt = rp.crosstab(df['chest_pain_type'], df['target'], test = "chi-square", expected_freqs = True)
+print('\033[1m' + 'CROSSTAB:'+ '\033[0m'+ '\n{}'.format(crtb))
+print('\033[1m' + '\nCHI-SQUARE TEST:'+ '\033[0m'+ '\n{}'.format(test))
+print('\033[1m' + '\nEXPECTED COUNT:'+ '\033[0m'+ '\n{}'.format(expt))
+
